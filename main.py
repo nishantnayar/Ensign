@@ -15,6 +15,8 @@ from pyensign.ensign import Ensign
 from pathlib import Path
 from dotenv import load_dotenv
 import websockets
+import pickle
+import time
 
 # Global variables
 topic = "Finnhub-json"
@@ -24,9 +26,13 @@ ClientID = os.environ.get("ClientID")
 ClientSecret = os.environ.get("ClientSecret")
 
 ensign = Ensign(client_id=ClientID, client_secret=ClientSecret)
-symbols = ["AAPL", "MSFT"]
-df = pd.DataFrame(columns=["symbol", "time", "price"])
-
+symbols = ["META", "NVDA"]
+df = pd.DataFrame(columns=["symbol", "day", "HrMin", "Second", "DateTime", "timestamp", "price"])
+path_file = './data'
+ticker_file = 'real_time_data3.pkl'
+#data_buffer = pd.DataFrame(columns=["symbol", "day", "HrMin", "Second", "timestamp", "price"])
+data_buffer = []
+write_interval = 60
 
 async def handle_ack(ack):
     _ = datetime.fromtimestamp(ack.committed.seconds + ack.committed.nanos / 1e9)
@@ -94,7 +100,7 @@ def get_timestamp(epoch):
         
 async def subscribe():
     """ 
-    Subscribe to topic and populate line chart in a Streamlit app
+    Subscribe to topic 
     """
     async for event in ensign.subscribe(topic):
         global df
@@ -103,16 +109,34 @@ async def subscribe():
         timestamp = get_timestamp(data["timestamp"])
         message = dict()
         message["symbol"] = data["symbol"]
-        #message["time"] = timestamp.strftime("%H:%M:%S")
         message["day"] = timestamp.strftime("%x")
         message["HrMin"] = timestamp.strftime("%H:%M")
         message["Second"] = timestamp.strftime("%S")
+        message["DateTime"] = timestamp.strftime("%Y-%m-%d %H:%M:%S")
         message["timestamp"] = timestamp.strftime("%f")
-        #message["timestamp"] = timestamp.strftime("%H:%M:%S.%fZ")
         message["price"] = str(data["price"])
         #message["volume"] = str(data["volume"])
         # add new data to dataframe
-        print(message)
+        df = pd.concat([df, pd.DataFrame([message])], ignore_index=True)
+        #print(message)
+        data_buffer.append(df)
+        
+        
+ 
+
+# Function to write the buffer to the pickle file at a regular interval
+async def write_buffer_periodically():
+    while True:
+        print('Went into true loop')
+        print(len(data_buffer))
+        if data_buffer:
+            with open(path_file + '/' + ticker_file, 'wb') as file:
+                pickle.dump(data_buffer, file)
+                file.close()
+            data_buffer.clear()
+        await asyncio.sleep(write_interval)
+
+       
 
 async def main():
     # Load FINNHUB_API_KEY from environment variable
@@ -123,6 +147,7 @@ async def main():
     # Create the subscribe and publish tasks and run them asynchronously
     subscribe_task = asyncio.create_task(subscribe())
     publish_task = asyncio.create_task(recv_and_publish(f"wss://ws.finnhub.io?token={token}&skip=5"))
+    write_task = asyncio.create_task(write_buffer_periodically())
     await asyncio.gather(subscribe_task, publish_task)
 
 if __name__ == "__main__":
