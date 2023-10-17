@@ -60,23 +60,40 @@ local_css(".\config\CustomStyle.css")
 def load_data_meta():
     df = pd.read_pickle('./data/meta_plot_data.pkl')
     return df
-
 df=load_data_meta()
 
 def load_data_nvda():
     df = pd.read_pickle('./data/nvda_plot_data.pkl')
     return df
-
 df2=load_data_nvda()
+
+
+def load_data_meta_daily():
+    df = pd.read_pickle('./data/meta_data.pkl')
+    return df
+META=load_data_meta_daily()
+
+def load_data_nvda_daily():
+    df = pd.read_pickle('./data/nvda_data.pkl')
+    return df   
+NVDA=load_data_nvda_daily()
+
+def load_data_meta_pred():
+    df = pd.read_pickle('./data/meta_pred.pkl')
+    return df
+meta_predictions=load_data_meta_pred()
+
+
+def load_data_nvda_pred():
+    df = pd.read_pickle('./data/nvda_pred.pkl')
+    return df
+nvda_predictions=load_data_nvda_pred()
+
 
 # =============================================================================
 # Create App title:
 # =============================================================================
-st.title("Introduction")
-st.write(
-    """
-    **Here we will dispaly prices - 2023 with priyank**
-    """)   
+st.title("Stock Price Predictions")
 
 
 # =============================================================================
@@ -86,18 +103,91 @@ st.write(
 st.sidebar.subheader("Hackathon App")
 st.sidebar.write("Display stock prices")
 
+st.sidebar.write(" ")
+st.sidebar.write(" ")
+
+st.sidebar.write('Team Members :')
+st.sidebar.info('Nishant Nayar')
+cols1, cols2 = st.sidebar.columns(2)
+cols1.markdown("[![LinkedIn](https://cdn2.iconfinder.com/data/icons/social-media-2285/512/1_Linkedin_unofficial_colored_svg-48.png)](https://www.linkedin.com/in/nishantnayar/)")
+#cols2.markdown("[![Github](https://github.com/nishantnayar)")
+
+st.sidebar.text("Johnson Bam")
+
+#Insired by
+#https://mludwig137-gini-recommender-e-gini-microlender-streamlit-5x4tc0.streamlit.app/
 
 # =============================================================================
 # Create App layout:
 # ============================================================================= 
 
 with st.container():
-   st.write("This is inside the container1")
+   
+    #st.write("This is inside the container1")
+    row1_0,  row2_2, = st.columns((9, 1))
+    with row1_0:
+        #st.write("This is inside the column1")
+        fig=go.Figure()
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-   # You can call any Streamlit command, including custom components:
+        # Add traces
+
+        fig.add_trace(go.Scatter(x=META.index,
+                                 y=META['price'],
+                                 opacity=0.7,
+                                 line=dict(color='green', width=2),
+                                 name='Meta'), secondary_y=False,)
+
+        fig.add_trace(go.Scatter(x=meta_predictions.index,
+                                 y=meta_predictions['price'],
+                                 opacity=0.7,
+                                 line=dict(color='green', width=2, dash='dot'),
+                                 name='Meta - prediction'), secondary_y=False,)
+
+        fig.add_trace(go.Scatter(x=NVDA.index,
+                                 y=NVDA['price'],
+                                 opacity=0.7,
+                                 line=dict(color='blue', width=2),
+                                 name='NVDA'), secondary_y=True,)
+
+        fig.add_trace(go.Scatter(x=nvda_predictions.index,
+                                 y=nvda_predictions['price'],
+                                 opacity=0.7,
+                                 line=dict(color='blue', width=2,  dash='dot'),
+                                 name='NVDA - prediction') , secondary_y=True,)
 
 
-st.write("This is outside the container")
+        # Add figure title
+        fig.update_layout(
+                          xaxis_rangeslider_visible=False,
+                        title="Price<br><sup>Predictions</sup>",
+                         title_font_color="#000", title_font_size = 24)
+
+
+
+        # Set y-axes titles
+        fig.update_yaxes(title_text="<b>META</b> prices", secondary_y=False, title_font_color="green")
+        fig.update_yaxes(title_text="<b>NVDA</b> prices", secondary_y=True, title_font_color="blue")
+        fig.update_xaxes(rangebreaks=[dict(bounds=["sat", "mon"])], showgrid=False)
+        fig.update_xaxes(visible=True)
+        fig.update_layout(xaxis=dict(showgrid=False),
+              yaxis=dict(showgrid=False)
+)   
+        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+        
+       
+    with row2_2:
+        st.write("")
+
+    #st.write("This is outside the container1")
+
+    
+    
+
+
+
+
+
     
 
 with st.container():
@@ -166,9 +256,9 @@ with st.container():
        
        fig.update_layout(xaxis_rangeslider_visible=False)
        
-       fig.update_layout(height=700, 
+       fig.update_layout(height=600, 
                 title="Meta<br><sup>H2 2023</sup>",
-                 title_font_color="#f00", title_font_size = 24)
+                 title_font_color="#259210", title_font_size = 24)
        
        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
@@ -233,9 +323,9 @@ with row0_2:
     
     fig.update_layout(xaxis_rangeslider_visible=False)
     
-    fig.update_layout(height=700, 
+    fig.update_layout(height=600, 
              title="NVDA<br><sup>H2 2023</sup>",
-              title_font_color="#f00", title_font_size = 24)
+              title_font_color="#0A4ED2", title_font_size = 24)
     
     st.plotly_chart(fig, theme="streamlit", use_container_width=True)       
 
