@@ -110,7 +110,11 @@ st.sidebar.write('Team Members :')
 st.sidebar.info('Nishant Nayar')
 cols1, cols2 = st.sidebar.columns(2)
 cols1.markdown("[![LinkedIn](https://cdn2.iconfinder.com/data/icons/social-media-2285/512/1_Linkedin_unofficial_colored_svg-48.png)](https://www.linkedin.com/in/nishantnayar/)")
-#cols2.markdown("[![Github](https://github.com/nishantnayar)")
+
+st.sidebar.info('Johnson Bam')
+cols1, cols2 = st.sidebar.columns(2)
+cols1.markdown("[![LinkedIn](https://cdn2.iconfinder.com/data/icons/social-media-2285/512/1_Linkedin_unofficial_colored_svg-48.png)](https://www.linkedin.com/in/johnsonbam/)")
+
 
 st.sidebar.text("Johnson Bam")
 

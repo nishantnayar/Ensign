@@ -17,5 +17,5 @@ def lambda_handler(event, context):
     name=    test_description()
     return {
         'statusCode': 200,
-        'body': json.dumps('Hello Priyank from Lambda!'+ name)
+        'body': json.dumps('Hello Nishant from Lambda!'+ name)
     }
